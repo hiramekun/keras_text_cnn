@@ -12,6 +12,7 @@ from keras.layers import Conv1D, GlobalMaxPooling1D, BatchNormalization, np
 from keras.layers import Dense, Dropout, Activation
 from keras.layers import Embedding
 from keras.models import Sequential
+from keras.optimizers import Adam
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer
 
@@ -118,8 +119,9 @@ def main(args):
     model.add(Dense(units=5))
     model.add(Activation('sigmoid'))
 
+    optimizer = Adam(lr=0.0001)
     model.compile(loss='categorical_crossentropy',
-                  optimizer='adam',
+                  optimizer=optimizer,
                   metrics=['accuracy'])
 
     checkpointer = ModelCheckpoint(
