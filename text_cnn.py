@@ -89,7 +89,9 @@ def main(args):
               epochs=epochs,
               validation_data=(x_test, y_test),
               callbacks=[checkpointer, csv_logger])
-    model.evaluate(x_test, y_test, batch_size=32)
+
+    with(open('./drive/model.json', 'w')) as f:
+        f.write(model.to_json())
 
 
 if __name__ == '__main__':
