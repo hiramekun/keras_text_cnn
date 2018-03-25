@@ -5,8 +5,6 @@ Gets to 0.89 test accuracy after 2 epochs.
 '''
 from __future__ import print_function
 
-import os
-
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from keras.layers import Conv1D, GlobalMaxPooling1D, BatchNormalization, np
 from keras.layers import Dense, Dropout, Activation
@@ -14,15 +12,8 @@ from keras.layers import Embedding
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.preprocessing import sequence
-from keras.preprocessing.text import Tokenizer
 
-context_label = (
-    'background',
-    'conclusions',
-    'methods',
-    'objective',
-    'results'
-)
+from data_loader import load_all_data
 
 
 def arg_parser():
@@ -32,33 +23,6 @@ def arg_parser():
     parser.add_argument('--mode', default='train')
     args = parser.parse_args(args=[])
     return args
-
-
-def load_all_data(args, mode):
-    def load_data(data_dir, fname):
-        texts = []
-        labels = []
-        with open(os.path.join('{}/{}'.format(data_dir, fname)), encoding='utf-8') as f:
-            for line in f:
-                texts.append("<s> " + line.strip() + " </s>")
-                labels.append(context_label.index(os.path.splitext(fname)[0]))
-        return texts, labels
-
-    tokenizer = Tokenizer(filters="")
-    whole_texts = []
-    whole_labels = []
-    data_dir = '{}/{}'.format(args.data_path, mode)
-
-    for fname in os.listdir(data_dir):
-        X, y = load_data(data_dir, fname)
-        whole_texts.extend(X)
-        whole_labels.extend(y)
-
-    from keras.utils.np_utils import to_categorical
-    categorical_labels = to_categorical(whole_labels, num_classes=5)
-    tokenizer.fit_on_texts(whole_texts)
-
-    return tokenizer.texts_to_sequences(whole_texts), categorical_labels, tokenizer
 
 
 def main(args):
