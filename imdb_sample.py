@@ -5,15 +5,15 @@ Gets to 0.89 test accuracy after 2 epochs.
 '''
 from __future__ import print_function
 
-from keras.callbacks import ModelCheckpoint, CSVLogger
-from keras.layers import Conv1D, GlobalMaxPooling1D, BatchNormalization, np
+from keras.callbacks import CSVLogger, ModelCheckpoint
+from keras.layers import Conv1D, GlobalMaxPooling1D, BatchNormalization, np, MaxPooling1D
 from keras.layers import Dense, Dropout, Activation
 from keras.layers import Embedding
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.preprocessing import sequence
 
-from data_loader import load_all_data
+from data_loader import load_split_data
 
 
 def arg_parser():
@@ -30,15 +30,15 @@ def main(args):
     max_features = 5000
     maxlen = 400
     batch_size = 32
-    embedding_dims = 50
+    embedding_dims = 128
     filters = 250
     kernel_size = 3
     hidden_dims = 250
-    epochs = 2  # we start off with an efficient embedding layer which maps
+    epochs = 10  # we start off with an efficient embedding layer which maps
 
     print('Loading data...')
-    X_train, y_train, tokenizer_train = load_all_data(args, 'train')
-    X_test, y_test, tokenizer_test = load_all_data(args, 'test')
+    X_train, y_train, X_test, y_test, tokenizer_train, tokenizer_test = load_split_data(args)
+
     y_train = np.asarray(y_train).astype('float32')
     y_test = np.asarray(y_test).astype('float32')
     vocab_size_train = len(tokenizer_train.word_index) + 1
@@ -51,7 +51,10 @@ def main(args):
     X_test = sequence.pad_sequences(X_test, maxlen=len(X_train[0]), padding='post')
     print('x_train shape:', X_train.shape)
     print('x_test shape:', X_test.shape)
+    print('vocab_size_train', vocab_size_train)
+
     seqX_len = len(X_train[0])
+    print('seqX_len', seqX_len)
     seqY_len = len(y_train[0])
     print('Build model...')
 
@@ -66,7 +69,16 @@ def main(args):
     # word group filters of size filter_length:
     model.add(Conv1D(filters,
                      kernel_size,
-                     padding='valid',
+                     padding='same',
+                     strides=1))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    # we use max pooling:
+    model.add(MaxPooling1D(strides=1))
+
+    model.add(Conv1D(filters,
+                     kernel_size,
+                     padding='same',
                      strides=1))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
@@ -83,7 +95,7 @@ def main(args):
     model.add(Dense(units=5))
     model.add(Activation('sigmoid'))
 
-    optimizer = Adam(lr=0.0001)
+    optimizer = Adam(lr=0.00001)
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizer,
                   metrics=['accuracy'])
@@ -91,13 +103,16 @@ def main(args):
     checkpointer = ModelCheckpoint(
         filepath='./drive/text_cnn' + '.{epoch:02d}-{val_loss:.2f}.hdf5', verbose=1,
         save_best_only=True, monitor='val_acc', mode='max')
-    csv_logger = CSVLogger('./text_cnn.log')
+    csv_logger = CSVLogger('./drive/text_cnn.log')
 
     model.fit(X_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
               validation_data=(X_test, y_test),
               callbacks=[checkpointer, csv_logger])
+
+    with(open('./drive/text_cnn_imdb_model.json', 'w')) as f:
+        f.write(model.to_json())
 
 
 if __name__ == '__main__':

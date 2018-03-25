@@ -9,7 +9,7 @@ from keras.layers import Reshape, Conv2D, MaxPooling2D, merge, Flatten
 from keras.optimizers import Adam
 from keras.preprocessing import sequence
 
-from data_loader import load_all_data
+from data_loader import load_split_data
 
 
 def arg_parser():
@@ -29,8 +29,7 @@ def main(args):
     epochs = 20
 
     print('Loading data...')
-    x_train, y_train, tokenizer_train = load_all_data(args, 'train')
-    x_test, y_test, tokenizer_test = load_all_data(args, 'test')
+    x_train, y_train, x_test, y_test, tokenizer_train, tokenizer_test = load_split_data(args)
     y_train = np.asarray(y_train).astype('float32')
     y_test = np.asarray(y_test).astype('float32')
     vocab_size_train = len(tokenizer_train.word_index) + 1
