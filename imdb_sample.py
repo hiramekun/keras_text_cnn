@@ -95,7 +95,7 @@ def main(args):
     model.add(Dense(units=5))
     model.add(Activation('sigmoid'))
 
-    optimizer = Adam(lr=0.00001)
+    optimizer = Adam(lr=0.000001)
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizer,
                   metrics=['accuracy'])
