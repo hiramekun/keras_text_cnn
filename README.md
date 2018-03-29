@@ -1,5 +1,6 @@
 # keras_text_cnn
 kerasを用いてPubMed RCTデータセットの文章分類タスクを実装しました。
+ブログにその詳細は載っているのでこちらを参照してください。http://hiramekun.hatenablog.com/entry/2018/03/26/114529
 ## imdb_sample.py
 kerasでCNNを用いて実装されていたimdbに対する文章分類タスクを、自分の用いるデータセット用に変更したものです。
 元実装はこちらにあります。https://github.com/keras-team/keras/blob/master/examples/imdb_cnn.py
